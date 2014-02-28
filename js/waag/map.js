@@ -8,7 +8,7 @@ var activeDataLayer;
 WAAG.GeoMap = function GeoMap(container) {
 
 	var mapScale=200000;
-	var svg, projection, path, map, regionMap, lineMap, dotMapMain,  dotMap, customLabelMap, barChart, circlePack;
+	var svg, projection, path, map, regionMap, lineMap, dotMapMain,  dotMap, customLabelMap, barChart, circlePack, legenda;
 	var centered, zoom;
 	var nodeTextCloud;
 	var defs, filter, feMerge;
@@ -134,6 +134,9 @@ WAAG.GeoMap = function GeoMap(container) {
 		customLabelMap=map.append("g")
    		  .attr("id", "customLabelMap");
    		  
+   	legenda=svg.append("g")
+       		  .attr("id", "legenda");	  
+   		  
    	barChart=svg.append("g")
    		  .attr("id", "barChartMain");
         
@@ -241,6 +244,43 @@ WAAG.GeoMap = function GeoMap(container) {
     return rBounds;
     
   }
+  
+  updateDataSet = function (dataLayer){
+    
+    if(dataLayer.cdk_id=="admr.nl.nederland"){
+      layerMainMap=dataLayer;
+    }
+    
+    if(activeDataLayer.cdk_id!=dataLayer.cdk_id){
+      activeDataLayer=dataLayer;
+    }
+
+    dataLayer.data.forEach(function(d){
+	    d.subData[activeLayer]=parseFloat(d.subData[activeLayer]);     
+      if(d.subData[activeLayer]<0 || isNaN(d.subData[activeLayer]) ){
+          d.subData[activeLayer]=0;
+      };
+      
+      
+    });
+
+    
+    max =  d3.max(dataLayer.data, function(d) { return d.subData[activeLayer]; });
+    min =  d3.min(dataLayer.data, function(d) { return d.subData[activeLayer]; });
+    
+    dataLayer.data.sort(function(b, a) { return d3.ascending(a.subData[activeLayer], b.subData[activeLayer])});
+
+	  colorScale = d3.scale.linear().domain([min,max]).range(['white', 'orange']);
+    quantizeBrewer = d3.scale.quantile().domain([min, max]).range(d3.range(rangeCB));
+    scalingGeo = d3.scale.linear().domain([min, max]).range(d3.range(max));
+    
+    updateRegionsMap(dataLayer);
+    //updateBarChart(dataLayer);
+    updateDotMap(dataLayer);
+    updateCirclePack(dataLayer);
+    updateLegenda(dataLayer);
+    
+  }
 
   updateMainMaps = function (dataLayer, update){
     // set d3 visualisations
@@ -252,12 +292,11 @@ WAAG.GeoMap = function GeoMap(container) {
       visGeo.enter().append("path")
     			  .attr("id", function(d, i){return d.cdk_id;})
     			  .attr("d", path)
-    			  //.style("fill", "#fff")
-    			  //.style("stroke", "none")
-    			  .style("fill-opacity", 0.75)
+    			  .style("fill", "#fbfafa")
+    			  .style("fill-opacity", 0.5)
     			  .style("stroke-width", 0.25+"px")
     			  .on("mouseover", function(d){
-    			    d3.select(this).attr("class", "q1-9").style("opacity", 0.25).style("stroke-width", 1+"px" )  
+    			    //d3.select(this).attr("class", "q1-9").style("opacity", 0.25).style("stroke-width", 1+"px" )  
 
       				var tipsy = $(this).tipsy({ 
       						gravity: 'w', 
@@ -272,7 +311,7 @@ WAAG.GeoMap = function GeoMap(container) {
 
       			})
       			.on("mouseout", function(d){
-      			  d3.select(this).attr("class", "q-white").style("opacity", 0.1).style("stroke-width", 0.5+"px" );
+      			  //d3.select(this).attr("class", "q-white").style("opacity", 0.1).style("stroke-width", 0.5+"px" );
 
       			})
     			  .on("click", function(d){
@@ -286,7 +325,7 @@ WAAG.GeoMap = function GeoMap(container) {
       
       if(update==false){	
         var initMenu = menu.createMenuItems(dataLayer);
-        //menu.updateListView(activeLayer);		
+        menu.updateListView(dataLayer);		
     		console.log("main map innited");
     		arrangeZindex();
 
@@ -320,7 +359,8 @@ WAAG.GeoMap = function GeoMap(container) {
   			  .attr("id", function(d, i){return d.cdk_id})
   			  .attr("r", function(d) { return d.boundsRadius})
   			  .attr("transform", function(d) { var xp=d.centroid[0]+(wMap*mapOffset);  return "translate(" + xp  +"," + d.centroid[1] + ")"; })
-  			  .style("fill-opacity", 0.75)
+  			  .style("fill", "#fbfafa")
+  			  .style("fill-opacity", 0.5)
   			  .style("stroke-width", 0.5+"px")
   			  .style("stroke", "#7f2704")
   			.on("mouseover", function(d){ 
@@ -350,43 +390,6 @@ WAAG.GeoMap = function GeoMap(container) {
   }
   
   
-  updateDataSet = function (dataLayer){
-    
-    if(dataLayer.cdk_id=="admr.nl.nederland"){
-      layerMainMap=dataLayer;
-    }
-    
-    if(activeDataLayer.cdk_id!=dataLayer.cdk_id){
-      activeDataLayer=dataLayer;
-    }
-
-    dataLayer.data.forEach(function(d){
-	    d.subData[activeLayer]=parseFloat(d.subData[activeLayer]);     
-      if(d.subData[activeLayer]<0 || isNaN(d.subData[activeLayer]) ){
-          d.subData[activeLayer]=0;
-      };
-      
-      
-    });
-    
-    console.log("min :"+min+" --> max :"+max);
-    
-    max =  d3.max(dataLayer.data, function(d) { return d.subData[activeLayer]; });
-    min =  d3.min(dataLayer.data, function(d) { return d.subData[activeLayer]; });
-    
-    dataLayer.data.sort(function(b, a) { return d3.ascending(a.subData[activeLayer], b.subData[activeLayer])});
-
-	  colorScale = d3.scale.linear().domain([min,max]).range(['white', 'orange']);
-    quantizeBrewer = d3.scale.quantile().domain([min, max]).range(d3.range(rangeCB));
-    scalingGeo = d3.scale.linear().domain([min, max]).range(d3.range(max));
-    
-    updateRegionsMap(dataLayer);
-    updateBarChart(dataLayer);
-    updateDotMap(dataLayer);
-    updateCirclePack(dataLayer);
-    
-  }
-  
    updateRegionsMap = function (dataLayer){
       
    //var data=dataLayer.data;
@@ -413,7 +416,7 @@ WAAG.GeoMap = function GeoMap(container) {
            .style("fill", function(d){ return colorbrewer[colorScheme]['9'][quantizeBrewer([d.subData[activeLayer]])] })
            //.style("stroke-width", 0.1+"px")
            .style("opacity", 1)
-            .on("mouseover", function(d){ 
+          .on("mouseover", function(d){ 
              d.className=$(this).attr("class");
              d3.select(this).style("stroke-width", 0.5+"px" );
              var tipsy = $(this).tipsy({ 
@@ -494,6 +497,7 @@ WAAG.GeoMap = function GeoMap(container) {
   }
   
 	var mTop=40, mBottom=20, mLeft=20, mRight=40, barWidth=160, legendaWidth=10;
+	
 	function updateBarChart(dataLayer){
 	  	
   	//reset leganda values
@@ -591,29 +595,7 @@ WAAG.GeoMap = function GeoMap(container) {
  
 
 	}
-		
-	function arrangeZindex(){
-	  var vis;
-	  var vis=d3.select("#cbs");
-  	vis.moveToFront();
-	  
-	  var vis=d3.select("#barChart");
-	  vis.moveToFront();
-	}
-	
-	d3.selection.prototype.moveToFront = function() {
-      return this.each(function(){
-      this.parentNode.appendChild(this);
-      });
-  };
-
-	function zoomed() {
-	  
-	    //console.log(d3.event);
-      map.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-  };
-  
-  
+		  
   setActiveLayer = function(_activeLayer){
     //console.log("setting active layer "+_activeLayer);
     activeLayer=_activeLayer;
@@ -625,8 +607,6 @@ WAAG.GeoMap = function GeoMap(container) {
   var pack = d3.layout.pack()
      .size([circlePackSize, circlePackSize])
      .value(function(d) { return d.subData[activeLayer] })
-     
-  
 
   function updateCirclePack(dataLayer){
        
@@ -644,9 +624,27 @@ WAAG.GeoMap = function GeoMap(container) {
             .style("fill-opacity", 0.5)
             .style("stroke", "#000")
             .style("stroke-width", 0.1+"px")
+            .on("mouseover", function(d){ 
+               d.className=$(this).attr("class");
+               d3.select(this).style("stroke-width", 0.5+"px" );
+               var tipsy = $(this).tipsy({ 
+                   gravity: 'w', 
+                   html: true,
+                   trigger: 'hover', 
+                       title: function() {
+                         var string=d.name+"<br> value: "+d.subData[activeLayer];
+                         return string; 
+                       }
+                 });
+                 $(this).trigger("mouseover");
+
+             })
+             .on("mouseout", function(d){
+               d3.select(this).style("stroke-width", 0.25+"px" );
+             })
 
         
-        node.append("title").text(function(d) { return d.name})    
+        //node.append("title").text(function(d) { return d.name})    
 
         node.transition()
             .duration(1000)
@@ -721,6 +719,102 @@ WAAG.GeoMap = function GeoMap(container) {
             .remove();          
 
     }
+    
+    function updateLegenda(dataLayer){
+      
+      //reset leganda values
+      
+
+      //console.log("legenga min ="+min+" --> max ="+max);
+      var range=parseInt((max-min)/rangeCB);
+      
+      
+      var r=10;
+      console.log("range ="+range);
+      // legenda
+      var dataLegenda=d3.entries(dataLayer.legenda);
+      for(var i=0; i<dataLegenda.length; i++){
+        //dataLeganda[i].valueStart=
+        if(i==0){
+          dataLegenda[i].valueMax= max;
+          dataLegenda[i].valueMin= max-range;
+        }else if(i<dataLegenda.length-1){
+          dataLegenda[i].valueMax=max-(i*range);
+          dataLegenda[i].valueMin= max-((i+1)*range);
+        }else if(i==dataLegenda.length-1){
+          dataLegenda[i].valueMax=max-(i*range);
+          dataLegenda[i].valueMin= 0;
+        }
+        
+        
+        dataLegenda[i].r=10+(rangeCB-1-i)
+        dataLegenda[i].color=colorbrewer[colorScheme]['9'][rangeCB-1-i]
+        dataLegenda[i].value=min+((rangeCB-1-i)*range)
+
+      }
+      
+      
+      var yPrev=0;
+      var visLegenda=d3.select("#legenda");
+      var vis=visLegenda.selectAll("circle").data(dataLegenda, function(d, i){return "q" + i + "-9"});
+
+  		vis.enter().append("circle")
+    			  .attr("id", function(d, i){return i})
+    			  .attr("r", function(d){return d.r})
+    			  .attr("transform", function(d, i) {var x=20+(d.r/2);  return "translate(" + x  +"," + (60+(i*25)) + ")"; })
+    			  .style("fill-opacity", 0.75)
+    			  .style("stroke-width", 1+"px")
+    			  .style("stroke", "#7f2704")
+
+    	    vis.transition()
+              .duration(250)
+              .style("fill", function(d){ return d.color })
+              .attr("r", function(d) { return d.r})
+
+           vis.exit().transition()
+              .duration(250)
+              .attr("r", 0)
+              .remove();
+      
+   
+      var legendaTxt=visLegenda.selectAll("text").data(dataLegenda, function(d, i){return i});     
+      
+      legendaTxt.enter().append("text")
+        .attr("x", function(d){ return 60} )
+        .attr("y", function(d,i){ return 60+(i*25) })
+        .attr("font-family", "sans-serif")
+        .attr("font-size", "10px")
+        .attr("fill", "#666")
+        .attr("text-anchor", "right")   
+        .text(function (d) { return (d.valueMin+" - "+d.valueMax)})
+        
+      legendaTxt.text(function (d) { return (d.valueMin+" - "+d.valueMax)})
+
+        
+      legendaTxt.exit().remove();
+      
+    }
+    
+  	function arrangeZindex(){
+  	  var vis;
+  	  var vis=d3.select("#cbs");
+    	vis.moveToFront();
+
+  	  var vis=d3.select("#barChart");
+  	  vis.moveToFront();
+  	}
+
+  	d3.selection.prototype.moveToFront = function() {
+        return this.each(function(){
+        this.parentNode.appendChild(this);
+        });
+    };
+
+  	function zoomed() {
+
+  	    //console.log(d3.event);
+        map.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+    };    
   
   
 

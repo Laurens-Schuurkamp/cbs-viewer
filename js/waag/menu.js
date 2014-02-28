@@ -48,7 +48,11 @@ WAAG.Menu = function Menu(container) {
   
   createMenuItems =function(dataLayer, activeLayer){
     console.log("setting menu items");
-    
+
+  }
+  
+  updateListView = function(dataLayer){
+
     var id="#listview_cbs";
     var list = d3.select(id);
 
@@ -61,7 +65,7 @@ WAAG.Menu = function Menu(container) {
           .attr("layer", cbsLayers.layer)
           .attr("data-mini", "true")
           .attr("data-icon", function(d){ 
-                  if(d.value==activeLayer){
+                  if(d.name==dataLayer.name){
                     d.checked=true;
                     return "check";
                   }else{
@@ -79,49 +83,6 @@ WAAG.Menu = function Menu(container) {
           .on("click", function(d){
               console.log("updating ciyy "+d.name);
               repository.getCbsData(d.cdk_id, d.name, level);
-              //geoMap.setActiveLayer(d.value);
-
-    		});
-
-      $(id).listview("refresh");
-    
-    
-        
-    
-  }
-  
-  updateListView = function(activeLayer){
-
-    var id="#listview_cbs";
-    var list = d3.select(id);
-
-      // (re) createlist     
-        list.selectAll("ul")
-          .data(cbsLayers.data)
-          .enter()
-          .append("li")
-          .attr("id", function(d, i){ return i})
-          .attr("layer", cbsLayers.layer)
-          .attr("data-mini", "true")
-          .attr("data-icon", function(d){ 
-                  if(d.value==activeLayer){
-                    d.checked=true;
-                    return "check";
-                  }else{
-                    d.checked=false;
-                    return "plus";
-                  }  
-              }) 
-   
-            .each(function(d) {
-                    d3.select(this).append("a")
-                      .attr("href", function(d){ return "#";})
-                      .text(d.description)
-                  
-                })
-          .on("click", function(d){
-              console.log("updating cbs layer "+d.value);
-              geoMap.setActiveLayer(d.value);
 
     		});
 
