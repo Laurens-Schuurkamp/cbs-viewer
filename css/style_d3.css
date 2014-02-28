@@ -1,0 +1,74 @@
+.svg{
+	fill:none;
+  position: absolute;
+	top:0;
+}
+
+
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+.background{
+	fill:none;
+}
+
+
+.active {
+  fill: steelblue;
+}
+
+path {
+  fill: white;
+  stroke: #000;
+  stroke-width: 0.25px;
+}
+
+.node circle {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 1px;
+}
+
+.node {
+  font: 10px sans-serif;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1px;
+}
+
+.symbol {
+  fill: steelblue;
+  fill-opacity: .8;
+  stroke: #fff;
+}
+
+.circle {
+  fill-opacity: .75;
+  stroke: #fff;
+}
+
+.rect {
+  stroke: #000;
+}
+.q-white{
+  fill:white;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  stroke-width: 0.25px;
+  
+}
+/*
+.x.axis path {
+  stroke: #000;
+  display: none;
+}
+*/

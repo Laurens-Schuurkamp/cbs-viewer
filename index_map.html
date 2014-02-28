@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CBS Viewer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+		
+		<link rel="stylesheet" href="css/jquerymobile/default_theme.css" />
+		<link rel="stylesheet" href="css/jquerymobile/jquery.mobile.structure-1.3.2.min.css" />
+		
+				
+		<link href="css/style.css"rel="stylesheet" />
+		<link href="css/style_d3.css"rel="stylesheet" />
+	  <link href="css/tipsy.css" rel="stylesheet" />
+	  <!-- <link href="colorbrewer/colorbrewer.css" rel="stylesheet" /> -->
+	
+		<script type="text/javascript" src="colorbrewer/colorbrewer.js"></script>
+				
+		<script type="text/javascript" src="js/jquery/jquery-1.9.1.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery.mobile-1.3.2.min.js"></script>
+
+		<script type="text/javascript" src="js/d3/d3.v3.min.js"></script>
+	  <script type="text/javascript" src="js/d3/d3.v3.min.js"></script>
+	  <script type="text/javascript" src="js/d3/topojson.v1.min.js"></script>
+
+	  <script type="text/javascript" src="js/waag/map.js"></script>
+	  <script type="text/javascript" src="js/waag/repository.js"></script>
+		<script type="text/javascript" src="js/waag/menu.js"></script>
+		<script type="text/javascript" src="js/waag/graphsD3.js"></script>
+	  <script type="text/javascript" src="js/waag/processing.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery.tipsy.js"></script>		
+		
+		
+</head>
+<body>
+				
+    <div data-role="page">
+	
+			<div data-role="panel" id="menu-panel" class="main_nav" data-display="reveal"  data-dismissible="true" data-theme="a" data-position="right" >
+				<div class="nav_profile">
+	      	<div class="nav_name">
+						<div id="menu_container">
+								<div id="main_item">
+									<h2>Viewer Settings</h2>
+									<hr>
+									<h4>Color scheme</h4>
+									<div style="margin-top:-10px" >
+										<select id="selector" name="colorBrewer" data-mini="true">
+						          <optgroup label="Select visualisation Colors" >
+							          <option value="Purples">Purples</option>
+						            <option value="Blues" >Blues</option>
+						            <option value="Greens">Greens</option>
+						            <option value="Oranges" selected>Oranges</option>
+						            <option value="Reds">Reds</option>
+						            <option value="Greys">Greys</option>
+						            <option value="YlGn">YlGn</option>
+						            <option value="YlGnBu">YlGnBu</option>
+						            <option value="GnBu">GnBu</option>
+						            <option value="BuGn">BuGn</option>
+						            <option value="PuBuGn">PuBuGn</option>
+						            <option value="PuBu">PuBu</option>
+						            <option value="BuPu">BuPu</option>
+						            <option value="RdPu">RdPu</option>
+						            <option value="PuRd">PuRd</option>
+						            <option value="OrRd">OrRd</option>
+						            <option value="YlOrRd">YlOrRd</option>
+						            <option value="YlOrBr">YlOrBr</option>
+						          </optgroup>
+					        	</select>
+									</div>
+									<br>
+									<hr>
+									<div style="margin-top:30px">
+									<input type="checkbox" name="geoScaling" id="checkbox_geoScaling" class="custom" data-mini="true" />
+									<label for="checkbox_geoScaling">geometry scaling</label>
+									</div>
+									<br>
+									<hr>
+									<div style="margin-top:30px">
+								  <div data-role="collapsible"  data-mini="false" data-theme="a" data-content-theme="a">
+									  <h4>Congregations - Cities</h4>
+								    <ul data-role="listview" data-mini="true" id="listview_cbs"></ul>
+									</div>
+									</div>
+
+								</div>
+						</div>
+	        </div><!--/nav_name-->
+	      </div><!--/nav_profile-->
+	    </div><!-- /panel -->
+ 
+      <!-- <div data-role="header" data-position="fixed" data-fullscreen="true" data-theme="a">
+      	<h1>City Dashboard</h1>
+				<a href="#menu-panel" data-icon="bars" data-iconpos="notext" class="ui-btn-right">menu</a>
+       </div><!-- /header -->
+ 
+        <div data-role="content">
+						
+            <div id="svg_container"></div>
+						<div id="legenda-header">Loading data sets .....</div>
+						<div id="menu_btn">
+								<a href="#menu-panel" style="margin-top:-10px;" data-role="button" data-icon="gear" data-iconpos="notext" data-theme="c" data-inline="true">Gear</a>
+						</div>
+						<div id="footer">
+			        CBS statistics the Netherlands, 2013
+			        <div class="hint">Use the menu to change the color scale</div>
+			        <div id="cbs-selector">
+								<select id="selector" name="cbs-list" >
+			          <optgroup id="cbs-optgroup" label="Statistical layers">
+			            <option value="bev_dichth">Bev. dichtheid</option>
+									<option value="aant_inw">Aantal inwoners</option>
+									<option value="aant_vrouw">Aantal vrouwen</option>
+									<option value="aant_man">Aantal mannen</option>
+									<option value="aantal_hh">Aantal huishoudens</option>
+									<option value="gem_hh_gr">Gemm. hh grote</option>
+									<option value="p_gehuwd">Perc. gehuwd</option>
+									<option value="p_hh_m_k">Perc. hh met kinderen</option>
+									<option value="p_hh_z_k">Perc. hh zonder kinderen</option>
+			            <option value="p_eenp_hh">Perc. 1pers. hh</option>
+									<option value="p_gescheid">Perc. gescheiden</option>
+									<option value="p_ongehuwd">Perc. ongehuwd</option>
+									<option value="p_verweduw">Perc. verweduwd</option>
+									
+									<option value="p_surinam">Perc. Surninaams</option>
+									<option value="p_ant_aru">Perc. Antiliaans</option>
+									<option value="p_marokko">Perc. Marokaans</option>
+									<option value="p_turkije">Perc. Turks</option>
+									<option value="p_west_al">Perc.west. allochtoon</option>
+									<option value="p_n_w_al">Perc. niet west. allochtoon</option>
+									<option value="p_over_nw">Perc. overig niet west.</option>
+									
+									<option value="p_00_14_jr">Perc. 0 - 14 jaar</option>
+									<option value="p_15_24_jr">Perc. 15 - 24 jaar</option>
+									<option value="p_25_44_jr">Perc. 25 - 44 jaar</option>
+									<option value="p_45_64_jr">Perc. 45 - 64 jaar</option>
+									<option value="p_65_eo_jr">Perc. 65+ jaar</option>
+									
+									<option value="opp_tot">Opp. totaal</option>
+									<option value="opp_land">Opp. land</option>
+									<option value="opp_water">Opp. water</option>
+																		
+			
+			          </optgroup>
+			        </select></div>	
+										
+        </div><!-- /content --> 
+
+    </div><!-- /page -->
+	  <script type="text/javascript">
+
+			var geoMap, repository, menu, graphsD3;
+			$(document).bind("ready", function() {
+				console.log("kick off visualisations");
+				window.addEventListener('resize', onWindowResize, false);
+
+				graphsD3 = new WAAG.GraphsD3();
+				
+				repository = new WAAG.Repository();
+				
+				var menuContainer = document.getElementById('menu_container');
+				menu = new WAAG.Menu(menuContainer);
+				
+				var mapContainer = document.getElementById('svg_container');
+				geoMap = new WAAG.GeoMap(mapContainer);
+
+
+				graphsD3 = new WAAG.GraphsD3();
+								
+				window.addEventListener('resize', onWindowResize, false);
+
+			});
+			
+			function onWindowResize( event ) {
+		    console.log('resize');
+				w = window.innerWidth;
+		    h = window.innerHeight;
+
+		  }
+
+	  </script>
+
+
+</body>
+</html>
